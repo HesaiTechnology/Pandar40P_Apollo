@@ -314,6 +314,7 @@ int Pandar40P_Internal::ParseRawData(Pandar40PPacket *packet,
   packet->usec = (buf[index] & 0xff) | (buf[index + 1] & 0xff) << 8 |
                  ((buf[index + 2] & 0xff) << 16) |
                  ((buf[index + 3] & 0xff) << 24);
+  packet->usec /= 1000000;
 
   index += TIMESTAMP_SIZE;
   packet->echo = buf[index] & 0xff;
@@ -329,8 +330,8 @@ int Pandar40P_Internal::ParseRawData(Pandar40PPacket *packet,
   packet->t.tm_mon = (buf[index + 1] & 0xff) - 1;
   packet->t.tm_mday = buf[index + 2] & 0xff;
   packet->t.tm_hour = buf[index + 3] & 0xff;
-  packet->t.tm_min = 0;  // usec include minute and second.
-  packet->t.tm_sec = 0;  // usec include minute and second.
+  packet->t.tm_min = buf[index + 4] & 0xff;
+  packet->t.tm_sec = buf[index + 5] & 0xff;
   packet->t.tm_isdst = 0;
 
   return 0;
@@ -403,6 +404,7 @@ void Pandar40P_Internal::CalcPointXYZIT(Pandar40PPacket *pkt, int blockid,
 
     double unix_second =
         static_cast<double>(mktime(&pkt->t) + 1);  // 1 second offset
+
 
     point.timestamp = unix_second + ((double)pkt->usec) / 1000000.0;
 
