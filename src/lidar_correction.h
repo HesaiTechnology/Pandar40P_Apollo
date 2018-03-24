@@ -14,8 +14,8 @@
  * limitations under the License.
  *****************************************************************************/
 
-#ifndef __LIDAR_CORRECTION_H
-#define __LIDAR_CORRECTION_H
+#ifndef SRC_LIDAR_CORRECTION_H_
+#define SRC_LIDAR_CORRECTION_H_
 
 #include <sstream>
 #include <string>
@@ -45,7 +45,7 @@ struct PandarLaserCorrection {
 class LidarCorrection {
  public:
   LidarCorrection() : initialized(false) {}
-  LidarCorrection(const std::string& LidarCorrectionFile) {
+  explicit LidarCorrection(const std::string& LidarCorrectionFile) {
     read(LidarCorrectionFile);
   }
 
@@ -57,8 +57,8 @@ class LidarCorrection {
   void setDefaultCorrections();
 };
 
-}  // apollo
-}  // drivers
-}  // hesai
+}  // namespace hesai
+}  // namespace drivers
+}  // namespace apollo
 
-#endif  // __PANDAR_LidarCorrection_H
+#endif  // SRC_LIDAR_CORRECTION_H_

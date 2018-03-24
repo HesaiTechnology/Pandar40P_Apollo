@@ -14,7 +14,6 @@
  * limitations under the License.
  *****************************************************************************/
 
-#include "input.h"
 #include <arpa/inet.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -26,6 +25,8 @@
 #include <iostream>
 #include <sstream>
 
+#include "src/input.h"
+
 namespace apollo {
 namespace drivers {
 namespace hesai {
@@ -34,7 +35,7 @@ Input::Input(uint16_t port, uint16_t gpsPort) {
   socketForLidar = -1;
   socketForLidar = socket(PF_INET, SOCK_DGRAM, 0);
   if (socketForLidar == -1) {
-    perror("socket");  // TODO: perror errno
+    perror("socket");  // TODO(Philip.Pi): perror errno.
     return;
   }
 
@@ -44,8 +45,9 @@ Input::Input(uint16_t port, uint16_t gpsPort) {
   myAddress.sin_port = htons(port);          // port in network byte order
   myAddress.sin_addr.s_addr = INADDR_ANY;    // automatically fill in my IP
 
-  if (bind(socketForLidar, (sockaddr *)&myAddress, sizeof(sockaddr)) == -1) {
-    perror("bind");  // TODO: perror errno
+  if (bind(socketForLidar, reinterpret_cast<sockaddr *>(&myAddress),
+           sizeof(sockaddr)) == -1) {
+    perror("bind");  // TODO(Philip.Pi): perror errno
     return;
   }
 
@@ -62,7 +64,7 @@ Input::Input(uint16_t port, uint16_t gpsPort) {
   socketForGPS = -1;
   socketForGPS = socket(PF_INET, SOCK_DGRAM, 0);
   if (socketForGPS == -1) {
-    perror("socket");  // TODO: perror errno
+    perror("socket");  // TODO(Philip.Pi): perror errno.
     return;
   }
 
@@ -72,8 +74,9 @@ Input::Input(uint16_t port, uint16_t gpsPort) {
   myAddressGPS.sin_port = htons(gpsPort);          // port in network byte order
   myAddressGPS.sin_addr.s_addr = INADDR_ANY;  // automatically fill in my IP
 
-  if (bind(socketForGPS, (sockaddr *)&myAddressGPS, sizeof(sockaddr)) == -1) {
-    perror("bind");  // TODO: perror errno
+  if (bind(socketForGPS, reinterpret_cast<sockaddr *>(&myAddressGPS),
+           sizeof(sockaddr)) == -1) {
+    perror("bind");  // TODO(Philip.Pi): perror errno
     return;
   }
 
@@ -128,7 +131,8 @@ int Input::getPacket(PandarPacket *pkt) {
   for (int i = 0; i != socketNumber; ++i) {
     if (fds[i].revents & POLLIN) {
       nbytes = recvfrom(fds[i].fd, &pkt->data[0], ETHERNET_MTU, 0,
-                        (sockaddr *)&senderAddress, &senderAddressLen);
+                        reinterpret_cast<sockaddr *>(&senderAddress),
+                        &senderAddressLen);
       break;
     }
   }
@@ -147,6 +151,6 @@ int Input::getPacket(PandarPacket *pkt) {
   return 0;
 }
 
-}  // apollo
-}  // drivers
-}  // hesai
+}  // namespace hesai
+}  // namespace drivers
+}  // namespace apollo

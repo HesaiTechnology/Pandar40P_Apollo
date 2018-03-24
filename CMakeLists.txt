@@ -9,8 +9,8 @@ set (CMAKE_CXX_FLAGS "-g -fPIC --std=c++11")
 
 
 include_directories(
+	.
 	include
-	src
 	${Boost_INCLUDE_DIRS}
 	${PCL_INCLUDE_DIRS}
 )

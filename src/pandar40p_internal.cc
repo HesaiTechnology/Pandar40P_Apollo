@@ -14,9 +14,9 @@
  * limitations under the License.
  *****************************************************************************/
 
-#include "pandar40p_internal.h"
-#include "input.h"
-#include "lidar_correction.h"
+#include "src/pandar40p_internal.h"
+#include "src/input.h"
+#include "src/lidar_correction.h"
 
 namespace apollo {
 namespace drivers {
@@ -39,9 +39,9 @@ static const float pandar40p_horizatal_azimuth_offset_map[] = {
     0.004,  0.004,  0.003,  0.003,  -2.466, -2.463, -2.46,  -2.457};
 
 Pandar40P_Internal::Pandar40P_Internal(
-    std::string device_ip, unsigned short lidar_port, unsigned short gps_port,
+    std::string device_ip, uint16_t lidar_port, uint16_t gps_port,
     boost::function<void(boost::shared_ptr<PPointCloud>, double)> pcl_callback,
-    boost::function<void(double)> gps_callback, unsigned short start_angle) {
+    boost::function<void(double)> gps_callback, uint16_t start_angle) {
   pthread_mutex_init(&lidar_lock_, NULL);
   sem_init(&lidar_sem_, 0, 0);
 
@@ -54,7 +54,7 @@ Pandar40P_Internal::Pandar40P_Internal(
   start_angle_ = start_angle;
 
   for (uint16_t rotIndex = 0; rotIndex < ROTATION_MAX_UNITS; ++rotIndex) {
-    float rotation = degreeToRadian(0.01 * (double)rotIndex);
+    float rotation = degreeToRadian(0.01 * static_cast<double>(rotIndex));
     cos_lookup_table_[rotIndex] = cosf(rotation);
     sin_lookup_table_[rotIndex] = sinf(rotation);
   }
@@ -138,13 +138,15 @@ Pandar40P_Internal::~Pandar40P_Internal() {
  * @brief load the correction file
  * @param file The path of correction file
  */
-int Pandar40P_Internal::LoadCorrectionFile(std::string file) {}
+int Pandar40P_Internal::LoadCorrectionFile(std::string correction_content) {}
 
 /**
  * @brief load the correction file
  * @param angle The start angle
  */
-void Pandar40P_Internal::ResetStartAngle(unsigned short start_angle) {}
+void Pandar40P_Internal::ResetStartAngle(uint16_t start_angle) {
+  start_angle_ = start_angle;
+}
 
 int Pandar40P_Internal::Start() {
   Stop();
@@ -218,20 +220,24 @@ void Pandar40P_Internal::ProcessLiarPacket() {
     lidar_packets_.pop_front();
     pthread_mutex_unlock(&lidar_lock_);
 
-    if (packet.size == 512) {
-      continue;
-    } else if (packet.size == PACKET_SIZE) {
+    if (packet.size == PACKET_SIZE) {
       Pandar40PPacket pkt;
       ret = ParseRawData(&pkt, packet.data, packet.size);
       if (ret != 0) {
         continue;
       }
+
       for (int i = 0; i < BLOCKS_PER_PACKET; ++i) {
-        /* for all the blocks */
-        if (last_azimuth_ > pkt.blocks[i].azimuth) {
-          if (pcl_callback_ && outMsg->points.size() > 0) {
-            pcl_callback_(outMsg, outMsg->points[0].timestamp);
-            outMsg.reset(new PPointCloud());
+        if (last_azimuth_ != pkt.blocks[i].azimuth) {
+          /* for all the blocks */
+          if ((last_azimuth_ > pkt.blocks[i].azimuth &&
+               start_angle_ <= pkt.blocks[i].azimuth) ||
+              (last_azimuth_ < start_angle_ &&
+               start_angle_ <= pkt.blocks[i].azimuth)) {
+            if (pcl_callback_ && outMsg->points.size() > 0) {
+              pcl_callback_(outMsg, outMsg->points[0].timestamp);
+              outMsg.reset(new PPointCloud());
+            }
           }
         }
         CalcPointXYZIT(&pkt, i, outMsg);
@@ -253,7 +259,7 @@ void Pandar40P_Internal::PushLiDARData(PandarPacket packet) {
   pthread_mutex_unlock(&lidar_lock_);
 }
 
-void Pandar40P_Internal::ProcessGps(PandarGPS &gpsMsg) {
+void Pandar40P_Internal::ProcessGps(const PandarGPS &gpsMsg) {
   struct tm t;
   t.tm_sec = gpsMsg.second;
   t.tm_min = gpsMsg.minute;
@@ -269,7 +275,7 @@ void Pandar40P_Internal::ProcessGps(PandarGPS &gpsMsg) {
   t.tm_isdst = 0;
 
   if (gps_callback_) {
-    gps_callback_((double)mktime(&t) + 1);
+    gps_callback_(static_cast<double>(mktime(&t)) + 1);
   }
 }
 
@@ -292,13 +298,14 @@ int Pandar40P_Internal::ParseRawData(Pandar40PPacket *packet,
     // 40x units
     for (int j = 0; j < LASER_COUNT; j++) {
       Pandar40PUnit &unit = block.units[j];
-      unsigned int range = (buf[index] & 0xff) | ((buf[index + 1] & 0xff) << 8);
+      uint32_t range = (buf[index] & 0xff) | ((buf[index + 1] & 0xff) << 8);
 
       // distance is M.
-      unit.distance = ((double)range) * LASER_RETURN_TO_DISTANCE_RATE;
+      unit.distance =
+          (static_cast<double>(range)) * LASER_RETURN_TO_DISTANCE_RATE;
       unit.intensity = (buf[index + 2] & 0xff);
 
-      // TODO: Filtering wrong data for LiDAR.
+      // TODO(Philip.Pi): Filtering wrong data for LiDAR.
       if ((unit.distance == 0x010101 && unit.intensity == 0x0101) ||
           unit.distance > (200 * 1000 / 2 /* 200m -> 2mm */)) {
         unit.distance = 0;
@@ -337,8 +344,8 @@ int Pandar40P_Internal::ParseRawData(Pandar40PPacket *packet,
   return 0;
 }
 
-int Pandar40P_Internal::ParseGPS(PandarGPS *packet,
-                                 const unsigned char *recvbuf, const int size) {
+int Pandar40P_Internal::ParseGPS(PandarGPS *packet, const uint8_t *recvbuf,
+                                 const int size) {
   if (size != GPS_PACKET_SIZE) {
     return -1;
   }
@@ -366,23 +373,20 @@ int Pandar40P_Internal::ParseGPS(PandarGPS *packet,
   packet->fineTime =
       (recvbuf[index] & 0xff) | (recvbuf[index + 1] & 0xff) << 8 |
       ((recvbuf[index + 2] & 0xff) << 16) | ((recvbuf[index + 3] & 0xff) << 24);
-//#define DEBUG
 #ifdef DEBUG
-        if(packet->year != 18)
-        {
-        printf("error gps\n");
-                char str[128];
-                int fd = open("/var/tmp/error_gps.txt" , O_RDWR  | O_CREAT , 0666);
-                lseek(fd , 0 , SEEK_END);
-                int i =0;
-                for(i = 0 ; i < 512 ; i ++)
-                {
-                        sprintf(str , "%02x " , recvbuf[i]);
-                        write(fd , str , strlen(str));
-                }
-                write(fd , "\n" , 1);
-                close(fd);
-        }
+  if (packet->year != 18) {
+    printf("error gps\n");
+    char str[128];
+    int fd = open("/var/tmp/error_gps.txt", O_RDWR | O_CREAT, 0666);
+    lseek(fd, 0, SEEK_END);
+    int i = 0;
+    for (i = 0; i < 512; i++) {
+      snprintf(str, "%02x ", recvbuf[i], 127);
+      write(fd, str, strlen(str));
+    }
+    write(fd, "\n", 1);
+    close(fd);
+  }
 #endif
   return 0;
 }
@@ -391,13 +395,16 @@ void Pandar40P_Internal::CalcPointXYZIT(Pandar40PPacket *pkt, int blockid,
                                         boost::shared_ptr<PPointCloud> cld) {
   Pandar40PBlock *block = &pkt->blocks[blockid];
 
+  double unix_second =
+      static_cast<double>(mktime(&pkt->t) + 1);  // 1 second offset
+
   for (int i = 0; i < LASER_COUNT; ++i) {
     /* for all the units in a block */
     Pandar40PUnit &unit = block->units[i];
     PPoint point;
 
     /* skip wrong points */
-    if (unit.distance <= 0.0 || unit.distance > 200.0) {
+    if (unit.distance <= 0.5 || unit.distance > 200.0) {
       continue;
     }
 
@@ -407,34 +414,48 @@ void Pandar40P_Internal::CalcPointXYZIT(Pandar40PPacket *pkt, int blockid,
     if (xylookup_id < 0) {
       xylookup_id += 36000;
     }
-    int zlookup_id = static_cast<int>((double)elev_angle_map_[i] * 100.0);
+    int zlookup_id =
+        static_cast<int>(static_cast<double>(elev_angle_map_[i]) * 100.0);
     if (zlookup_id < 0) {
       zlookup_id += 36000;
     }
 
-    double xyDistance = unit.distance * cos_lookup_table_[zlookup_id];
-    point.x = static_cast<float>(xyDistance * sin_lookup_table_[xylookup_id]);
-    point.y = static_cast<float>(xyDistance * cos_lookup_table_[xylookup_id]);
-    point.z = static_cast<float>(unit.distance * sin_lookup_table_[zlookup_id]);
+    double xyDistance =
+        unit.distance * cosf(degreeToRadian(elev_angle_map_[i]));
+    point.x = static_cast<float>(
+        xyDistance *
+        sinf(degreeToRadian(horizatal_azimuth_offset_map_[i] +
+                            (static_cast<double>(block->azimuth)) / 100.0)));
+    point.x = static_cast<float>(
+        xyDistance *
+        cosf(degreeToRadian(horizatal_azimuth_offset_map_[i] +
+                            (static_cast<double>(block->azimuth)) / 100.0)));
+    point.z = static_cast<float>(unit.distance *
+                                 sinf(degreeToRadian(elev_angle_map_[i])));
+
+    // point.x = static_cast<float>(xyDistance *
+    // sin_lookup_table_[xylookup_id]);
+    // point.y = static_cast<float>(xyDistance *
+    // cos_lookup_table_[xylookup_id]);
+    // point.z = static_cast<float>(unit.distance *
+    // sin_lookup_table_[zlookup_id]);
 
     point.intensity = unit.intensity;
 
-    double unix_second =
-        static_cast<double>(mktime(&pkt->t) + 1);  // 1 second offset
-
-
-    point.timestamp = unix_second + ((double)pkt->usec) / 1000000.0;
+    point.timestamp =
+        unix_second + (static_cast<double>(pkt->usec)) / 1000000.0;
 
     if (pkt->echo == 0x39) {
       // dual return, block 0&1 (2&3 , 4*5 ...)'s timestamp is the same.
       point.timestamp =
-          point.timestamp -
-          ((double)(blockOffset_[blockid / 2] + laserOffset_[i / 2]) /
-           1000000.0f);
+          point.timestamp - (static_cast<double>(blockOffset_[blockid / 2] +
+                                                 laserOffset_[i / 2]) /
+                             1000000.0f);
     } else {
       point.timestamp =
           point.timestamp -
-          ((double)(blockOffset_[blockid] + laserOffset_[i]) / 1000000.0f);
+          (static_cast<double>(blockOffset_[blockid] + laserOffset_[i]) /
+           1000000.0f);
     }
 
     point.ring = i;
@@ -443,6 +464,6 @@ void Pandar40P_Internal::CalcPointXYZIT(Pandar40PPacket *pkt, int blockid,
   }
 }
 
-}  // apollo
-}  // drivers
-}  // hesai
+}  // namespace hesai
+}  // namespace drivers
+}  // namespace apollo

@@ -14,17 +14,19 @@
  * limitations under the License.
  *****************************************************************************/
 
-#ifndef PANDAR40P_H_
-#define PANDAR40P_H_
+#ifndef INCLUDE_PANDAR40P_H_
+#define INCLUDE_PANDAR40P_H_
 
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 #include <pthread.h>
 #include <semaphore.h>
-#include <boost/function.hpp>
+
 #include <string>
 
-#include "point_types.h"
+#include <boost/function.hpp>
+
+#include "pandar40p/point_types.h"
 
 namespace apollo {
 namespace drivers {
@@ -43,12 +45,12 @@ class Pandar40P {
    *        gps_callback      The callback of GPS structure
    *        type       				The device type
    */
-  Pandar40P(std::string device_ip, unsigned short lidar_port,
-            unsigned short gps_port,
+  Pandar40P(std::string device_ip, uint16_t lidar_port,
+            uint16_t gps_port,
             boost::function<void(boost::shared_ptr<PPointCloud>, double)>
                 pcl_callback,
             boost::function<void(double)> gps_callback,
-            unsigned short start_angle);
+            uint16_t start_angle);
   ~Pandar40P();
 
   /**
@@ -61,7 +63,7 @@ class Pandar40P {
    * @brief load the correction file
    * @param angle The start angle
    */
-  void ResetStartAngle(unsigned short start_angle);
+  void ResetStartAngle(uint16_t start_angle);
 
   int Start();
   void Stop();
@@ -70,8 +72,8 @@ class Pandar40P {
   Pandar40P_Internal *internal_;
 };
 
-}  // apollo
-}  // drivers
-}  // hesai
+}  // namespace hesai
+}  // namespace drivers
+}  // namespace apollo
 
-#endif  // PANDAR40P_H_
+#endif  // INCLUDE_PANDAR40P_H_

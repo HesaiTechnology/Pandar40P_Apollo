@@ -14,7 +14,7 @@
  * limitations under the License.
  *****************************************************************************/
 
-#include "pandar40p.h"
+#include "pandar40p/pandar40p.h"
 
 using namespace apollo::drivers::hesai;
 

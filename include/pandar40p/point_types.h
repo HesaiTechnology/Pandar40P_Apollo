@@ -14,8 +14,8 @@
  * limitations under the License.
  *****************************************************************************/
 
-#ifndef __PANDAR_POINTCLOUD_POINT_TYPES_H
-#define __PANDAR_POINTCLOUD_POINT_TYPES_H
+#ifndef INCLUDE_POINT_TYPES_H_
+#define INCLUDE_POINT_TYPES_H_
 
 #include <pcl/point_types.h>
 
@@ -31,9 +31,9 @@ struct PointXYZIT {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW  // make sure our new allocators are aligned
 } EIGEN_ALIGN16;
 
-}  // apollo
-}  // drivers
-}  // hesai
+}  // namespace hesai
+}  // namespace drivers
+}  // namespace apollo
 
 POINT_CLOUD_REGISTER_POINT_STRUCT(
     apollo::drivers::hesai::PointXYZIT,
@@ -43,4 +43,4 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(
 typedef apollo::drivers::hesai::PointXYZIT PPoint;
 typedef pcl::PointCloud<PPoint> PPointCloud;
 
-#endif
+#endif  // INCLUDE_POINT_TYPES_H_

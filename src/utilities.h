@@ -17,9 +17,9 @@
 #include <string>
 #include <vector>
 
-#ifndef PANDAR40P_UTILITIES_H
-#define PANDAR40P_UTILITIES_H
+#ifndef SRC_UTILITIES_H_
+#define SRC_UTILITIES_H_
 
 std::vector<std::string> split(std::string strtem, char a);
 
-#endif  // PANDAR40P_UTILITIES_H
+#endif  // SRC_UTILITIES_H_

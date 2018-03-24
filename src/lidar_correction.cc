@@ -14,10 +14,12 @@
  * limitations under the License.
  *****************************************************************************/
 
-#include "lidar_correction.h"
-#include <boost/filesystem.hpp>
+#include "src/lidar_correction.h"
+
 #include <fstream>
 #include <iostream>
+
+#include <boost/filesystem.hpp>
 
 namespace apollo {
 namespace drivers {
@@ -56,6 +58,6 @@ void LidarCorrection::setDefaultCorrections() {
   }
 }
 
-}  // apollo
-}  // drivers
-}  // hesai
+}  // namespace hesai
+}  // namespace drivers
+}  // namespace apollo

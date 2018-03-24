@@ -14,18 +14,21 @@
  * limitations under the License.
  *****************************************************************************/
 
-#ifndef PANDAR40P_INTERNAL_H_
-#define PANDAR40P_INTERNAL_H_
+#ifndef SRC_PANDAR40P_INTERNAL_H_
+#define SRC_PANDAR40P_INTERNAL_H_
 
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 #include <pthread.h>
 #include <semaphore.h>
-#include <boost/function.hpp>
+
+#include <list>
 #include <string>
 
-#include "input.h"
-#include "point_types.h"
+#include <boost/function.hpp>
+
+#include "src/input.h"
+#include "pandar40p/point_types.h"
 
 #define SOB_ANGLE_SIZE (4)
 #define RAW_MEASURE_SIZE (3)
@@ -39,7 +42,7 @@
 #define REVOLUTION_SIZE (2)
 #define INFO_SIZE                                                  \
   (TIMESTAMP_SIZE + FACTORY_INFO_SIZE + ECHO_SIZE + RESERVE_SIZE + \
-   REVOLUTION_SIZE)
+    REVOLUTION_SIZE)
 #define UTC_TIME (6)
 #define PACKET_SIZE (BLOCK_SIZE * BLOCKS_PER_PACKET + INFO_SIZE + UTC_TIME)
 #define LASER_RETURN_TO_DISTANCE_RATE (0.004)
@@ -58,14 +61,14 @@
 #define HesaiLidarSDK_DEFAULT_GPS_RECV_PORT 10110
 
 struct Pandar40PUnit_s {
-  unsigned char intensity;
+  uint8_t intensity;
   double distance;
 };
 typedef struct Pandar40PUnit_s Pandar40PUnit;
 
 struct Pandar40PBlock_s {
-  unsigned short azimuth;
-  unsigned short sob;
+  uint16_t azimuth;
+  uint16_t sob;
   Pandar40PUnit units[LASER_COUNT];
 };
 typedef struct Pandar40PBlock_s Pandar40PBlock;
@@ -73,20 +76,20 @@ typedef struct Pandar40PBlock_s Pandar40PBlock;
 struct Pandar40PPacket_s {
   Pandar40PBlock blocks[BLOCKS_PER_PACKET];
   struct tm t;
-  unsigned int usec;
+  uint32_t usec;
   int echo;
 };
 typedef struct Pandar40PPacket_s Pandar40PPacket;
 
 struct PandarGPS_s {
-  unsigned short flag;
-  unsigned short year;
-  unsigned short month;
-  unsigned short day;
-  unsigned short second;
-  unsigned short minute;
-  unsigned short hour;
-  unsigned int fineTime;
+  uint16_t flag;
+  uint16_t year;
+  uint16_t month;
+  uint16_t day;
+  uint16_t second;
+  uint16_t minute;
+  uint16_t hour;
+  uint32_t fineTime;
 };
 typedef struct PandarGPS_s PandarGPS;
 
@@ -108,10 +111,10 @@ class Pandar40P_Internal {
    *        type       				The device type
    */
   Pandar40P_Internal(
-      std::string device_ip, unsigned short lidar_port, unsigned short gps_port,
+      std::string device_ip, uint16_t lidar_port, uint16_t gps_port,
       boost::function<void(boost::shared_ptr<PPointCloud>, double)>
           pcl_callback,
-      boost::function<void(double)> gps_callback, unsigned short start_angle);
+      boost::function<void(double)> gps_callback, uint16_t start_angle);
 
   /**
    * @brief load the correction file
@@ -123,7 +126,7 @@ class Pandar40P_Internal {
    * @brief load the correction file
    * @param angle The start angle
    */
-  void ResetStartAngle(unsigned short start_angle);
+  void ResetStartAngle(uint16_t start_angle);
 
   ~Pandar40P_Internal();
 
@@ -132,11 +135,11 @@ class Pandar40P_Internal {
 
  private:
   void RecvTask();
-  void ProcessGps(PandarGPS &gpsMsg);
+  void ProcessGps(const PandarGPS &gpsMsg);
   void ProcessLiarPacket();
   void PushLiDARData(PandarPacket packet);
   int ParseRawData(Pandar40PPacket *packet, const uint8_t *buf, const int len);
-  int ParseGPS(PandarGPS *packet, const unsigned char *recvbuf, const int size);
+  int ParseGPS(PandarGPS *packet, const uint8_t *recvbuf, const int size);
   void CalcPointXYZIT(Pandar40PPacket *pkt, int blockid,
                       boost::shared_ptr<PPointCloud> cld);
 
@@ -158,7 +161,7 @@ class Pandar40P_Internal {
   float sin_lookup_table_[ROTATION_MAX_UNITS];
   float cos_lookup_table_[ROTATION_MAX_UNITS];
 
-  unsigned short last_azimuth_;
+  uint16_t last_azimuth_;
 
   float elev_angle_map_[LASER_COUNT];
   float horizatal_azimuth_offset_map_[LASER_COUNT];
@@ -167,8 +170,8 @@ class Pandar40P_Internal {
   float laserOffset_[LASER_COUNT];
 };
 
-}  // apollo
-}  // drivers
-}  // hesai
+}  // namespace hesai
+}  // namespace drivers
+}  // namespace apollo
 
-#endif  // PANDAR40P_INTERNAL_H_
+#endif  // SRC_PANDAR40P_INTERNAL_H_

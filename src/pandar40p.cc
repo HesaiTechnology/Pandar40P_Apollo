@@ -14,17 +14,17 @@
  * limitations under the License.
  *****************************************************************************/
 
-#include "pandar40p.h"
-#include "pandar40p_internal.h"
+#include "pandar40p/pandar40p.h"
+#include "src/pandar40p_internal.h"
 
 namespace apollo {
 namespace drivers {
 namespace hesai {
 
 Pandar40P::Pandar40P(
-    std::string device_ip, unsigned short lidar_port, unsigned short gps_port,
+    std::string device_ip, uint16_t lidar_port, uint16_t gps_port,
     boost::function<void(boost::shared_ptr<PPointCloud>, double)> pcl_callback,
-    boost::function<void(double)> gps_callback, unsigned short start_angle) {
+    boost::function<void(double)> gps_callback, uint16_t start_angle) {
   internal_ = new Pandar40P_Internal(device_ip, lidar_port, gps_port,
                                      pcl_callback, gps_callback, start_angle);
 }
@@ -43,7 +43,7 @@ int Pandar40P::LoadCorrectionFile(std::string file) {
  * @brief load the correction file
  * @param angle The start angle
  */
-void Pandar40P::ResetStartAngle(unsigned short start_angle) {
+void Pandar40P::ResetStartAngle(uint16_t start_angle) {
   internal_->ResetStartAngle(start_angle);
 }
 
@@ -51,6 +51,6 @@ int Pandar40P::Start() { internal_->Start(); }
 
 void Pandar40P::Stop() { internal_->Stop(); }
 
-}  // apollo
-}  // drivers
-}  // hesai
+}  // namespace hesai
+}  // namespace drivers
+}  // namespace apollo

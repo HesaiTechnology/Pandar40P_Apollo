@@ -14,8 +14,8 @@
  * limitations under the License.
  *****************************************************************************/
 
-#ifndef __PANDAR_INPUT_H
-#define __PANDAR_INPUT_H
+#ifndef SRC_INPUT_H_
+#define SRC_INPUT_H_
 
 #include <netinet/in.h>
 #include <pcap.h>
@@ -49,8 +49,8 @@ class Input {
   int socketNumber;
 };
 
-}  // apollo
-}  // drivers
-}  // hesai
+}  // namespace hesai
+}  // namespace drivers
+}  // namespace apollo
 
-#endif  // __PANDAR_INPUT_H
+#endif  // SRC_INPUT_H_
