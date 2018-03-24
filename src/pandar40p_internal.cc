@@ -54,7 +54,7 @@ Pandar40P_Internal::Pandar40P_Internal(
   start_angle_ = start_angle;
 
   for (uint16_t rotIndex = 0; rotIndex < ROTATION_MAX_UNITS; ++rotIndex) {
-    float rotation = degreeToRadian(0.01 * rotIndex);
+    float rotation = degreeToRadian(0.01 * (double)rotIndex);
     cos_lookup_table_[rotIndex] = cosf(rotation);
     sin_lookup_table_[rotIndex] = sinf(rotation);
   }
@@ -187,6 +187,7 @@ void Pandar40P_Internal::RecvTask() {
       if (ret == 0) {
         ProcessGps(gpsMsg);
       }
+      continue;
     }
 
     PushLiDARData(pkt);
@@ -230,9 +231,8 @@ void Pandar40P_Internal::ProcessLiarPacket() {
             pcl_callback_(outMsg, outMsg->points[0].timestamp);
             outMsg.reset(new PPointCloud());
           }
-
-          CalcPointXYZIT(&pkt, i, outMsg);
         }
+        CalcPointXYZIT(&pkt, i, outMsg);
         last_azimuth_ = pkt.blocks[i].azimuth;
       }
     } else {
@@ -381,9 +381,6 @@ void Pandar40P_Internal::CalcPointXYZIT(Pandar40PPacket *pkt, int blockid,
       continue;
     }
 
-    double xyDistance =
-        unit.distance *
-        cos_lookup_table_[static_cast<int>(elev_angle_map_[i] * 100.0)];
 
     int xylookup_id =
         static_cast<int>(horizatal_azimuth_offset_map_[i] * 100.0) +
@@ -391,11 +388,14 @@ void Pandar40P_Internal::CalcPointXYZIT(Pandar40PPacket *pkt, int blockid,
     if (xylookup_id < 0) {
       xylookup_id += 36000;
     }
-    int zlookup_id = static_cast<int>(elev_angle_map_[i] * 100.0);
+    int zlookup_id = static_cast<int>((double)elev_angle_map_[i] * 100.0);
     if (zlookup_id < 0) {
       zlookup_id += 36000;
     }
 
+    double xyDistance =
+        unit.distance *
+        cos_lookup_table_[zlookup_id];
     point.x = static_cast<float>(xyDistance * sin_lookup_table_[xylookup_id]);
     point.y = static_cast<float>(xyDistance * cos_lookup_table_[xylookup_id]);
     point.z = static_cast<float>(unit.distance * sin_lookup_table_[zlookup_id]);
