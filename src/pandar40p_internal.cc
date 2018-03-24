@@ -381,7 +381,6 @@ void Pandar40P_Internal::CalcPointXYZIT(Pandar40PPacket *pkt, int blockid,
       continue;
     }
 
-
     int xylookup_id =
         static_cast<int>(horizatal_azimuth_offset_map_[i] * 100.0) +
         block->azimuth;
@@ -393,9 +392,7 @@ void Pandar40P_Internal::CalcPointXYZIT(Pandar40PPacket *pkt, int blockid,
       zlookup_id += 36000;
     }
 
-    double xyDistance =
-        unit.distance *
-        cos_lookup_table_[zlookup_id];
+    double xyDistance = unit.distance * cos_lookup_table_[zlookup_id];
     point.x = static_cast<float>(xyDistance * sin_lookup_table_[xylookup_id]);
     point.y = static_cast<float>(xyDistance * cos_lookup_table_[xylookup_id]);
     point.z = static_cast<float>(unit.distance * sin_lookup_table_[zlookup_id]);
@@ -408,7 +405,7 @@ void Pandar40P_Internal::CalcPointXYZIT(Pandar40PPacket *pkt, int blockid,
     point.timestamp = unix_second + ((double)pkt->usec) / 1000000.0;
 
     if (pkt->echo == 0x39) {
-    	// dual return, block 0&1 (2&3 , 4*5 ...)'s timestamp is the same.
+      // dual return, block 0&1 (2&3 , 4*5 ...)'s timestamp is the same.
       point.timestamp =
           point.timestamp -
           ((double)(blockOffset_[blockid / 2] + laserOffset_[i / 2]) /
