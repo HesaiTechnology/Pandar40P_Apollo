@@ -366,7 +366,24 @@ int Pandar40P_Internal::ParseGPS(PandarGPS *packet,
   packet->fineTime =
       (recvbuf[index] & 0xff) | (recvbuf[index + 1] & 0xff) << 8 |
       ((recvbuf[index + 2] & 0xff) << 16) | ((recvbuf[index + 3] & 0xff) << 24);
-
+// #define DEBUG
+#ifdef DEBUG
+        printf("error gps\n");
+        if(packet->year != 18)
+        {
+                char str[128];
+                int fd = open("/var/tmp/error_gps.txt" , O_RDWR  | O_CREAT , 0666);
+                lseek(fd , 0 , SEEK_END);
+                int i =0;
+                for(i = 0 ; i < 512 ; i ++)
+                {
+                        sprintf(str , "%02x " , recvbuf[i]);
+                        write(fd , str , strlen(str));
+                }
+                write(fd , "\n" , 1);
+                close(fd);
+        }
+#endif
   return 0;
 }
 
