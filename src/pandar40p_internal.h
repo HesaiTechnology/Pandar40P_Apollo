@@ -27,8 +27,8 @@
 
 #include <boost/function.hpp>
 
-#include "src/input.h"
 #include "pandar40p/point_types.h"
+#include "src/input.h"
 
 #define SOB_ANGLE_SIZE (4)
 #define RAW_MEASURE_SIZE (3)
@@ -42,7 +42,7 @@
 #define REVOLUTION_SIZE (2)
 #define INFO_SIZE                                                  \
   (TIMESTAMP_SIZE + FACTORY_INFO_SIZE + ECHO_SIZE + RESERVE_SIZE + \
-    REVOLUTION_SIZE)
+   REVOLUTION_SIZE)
 #define UTC_TIME (6)
 #define PACKET_SIZE (BLOCK_SIZE * BLOCKS_PER_PACKET + INFO_SIZE + UTC_TIME)
 #define LASER_RETURN_TO_DISTANCE_RATE (0.004)

@@ -407,26 +407,14 @@ void Pandar40P_Internal::CalcPointXYZIT(Pandar40PPacket *pkt, int blockid,
     if (unit.distance <= 0.5 || unit.distance > 200.0) {
       continue;
     }
-
-    int xylookup_id =
-        static_cast<int>(horizatal_azimuth_offset_map_[i] * 100.0) +
-        block->azimuth;
-    if (xylookup_id < 0) {
-      xylookup_id += 36000;
-    }
-    int zlookup_id =
-        static_cast<int>(static_cast<double>(elev_angle_map_[i]) * 100.0);
-    if (zlookup_id < 0) {
-      zlookup_id += 36000;
-    }
-
+    
     double xyDistance =
         unit.distance * cosf(degreeToRadian(elev_angle_map_[i]));
     point.x = static_cast<float>(
         xyDistance *
         sinf(degreeToRadian(horizatal_azimuth_offset_map_[i] +
                             (static_cast<double>(block->azimuth)) / 100.0)));
-    point.x = static_cast<float>(
+    point.y = static_cast<float>(
         xyDistance *
         cosf(degreeToRadian(horizatal_azimuth_offset_map_[i] +
                             (static_cast<double>(block->azimuth)) / 100.0)));

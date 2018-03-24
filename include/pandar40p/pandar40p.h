@@ -45,12 +45,10 @@ class Pandar40P {
    *        gps_callback      The callback of GPS structure
    *        type       				The device type
    */
-  Pandar40P(std::string device_ip, uint16_t lidar_port,
-            uint16_t gps_port,
+  Pandar40P(std::string device_ip, uint16_t lidar_port, uint16_t gps_port,
             boost::function<void(boost::shared_ptr<PPointCloud>, double)>
                 pcl_callback,
-            boost::function<void(double)> gps_callback,
-            uint16_t start_angle);
+            boost::function<void(double)> gps_callback, uint16_t start_angle);
   ~Pandar40P();
 
   /**
