@@ -66,6 +66,7 @@ Pandar40P_Internal::Pandar40P_Internal(
 
   last_azimuth_ = 0;
 
+  // init the block time offset, us
   blockOffset_[9] = 55.1f * 0.0 + 45.18f;
   blockOffset_[8] = 55.1f * 1.0 + 45.18f;
   blockOffset_[7] = 55.1f * 2.0 + 45.18f;
@@ -77,6 +78,7 @@ Pandar40P_Internal::Pandar40P_Internal(
   blockOffset_[1] = 55.1f * 8.0 + 45.18f;
   blockOffset_[0] = 55.1f * 9.0 + 45.18f;
 
+  // init the laser shot time offset, us
   laserOffset_[3] = 0.93f * 1.0f;
   laserOffset_[35] = 0.93f * 2.0f;
   laserOffset_[39] = 0.93f * 3.0f;
@@ -327,8 +329,8 @@ int Pandar40P_Internal::ParseRawData(Pandar40PPacket *packet,
   packet->t.tm_mon = (buf[index + 1] & 0xff) - 1;
   packet->t.tm_mday = buf[index + 2] & 0xff;
   packet->t.tm_hour = buf[index + 3] & 0xff;
-  packet->t.tm_min = buf[index + 4] & 0xff;
-  packet->t.tm_sec = buf[index + 5] & 0xff;
+  packet->t.tm_min = 0;  // usec include minute and second.
+  packet->t.tm_sec = 0;  // usec include minute and second.
   packet->t.tm_isdst = 0;
 
   return 0;
