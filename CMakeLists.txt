@@ -16,7 +16,7 @@ include_directories(
 )
 
 
-add_library( ${PROJECT_NAME} SHARED
+add_library( ${PROJECT_NAME}
 	src/lidar_correction.cc
 	src/input.cc
 	src/pandar40p_internal.cc
