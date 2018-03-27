@@ -21,6 +21,15 @@ namespace apollo {
 namespace drivers {
 namespace hesai {
 
+/**
+ * @brief Constructor
+ * @param device_ip         The ip of the device
+ *        lidar_port        The port number of lidar data
+ *        gps_port          The port number of gps data
+ *        pcl_callback      The callback of PCL data structure
+ *        gps_callback      The callback of GPS structure
+ *        start_angle       The start angle of every point cloud
+ */
 Pandar40P::Pandar40P(
     std::string device_ip, uint16_t lidar_port, uint16_t gps_port,
     boost::function<void(boost::shared_ptr<PPointCloud>, double)> pcl_callback,
@@ -29,26 +38,35 @@ Pandar40P::Pandar40P(
                                      pcl_callback, gps_callback, start_angle);
 }
 
+/**
+ * @brief deconstructor
+ */
 Pandar40P::~Pandar40P() { delete internal_; }
 
 /**
- * @brief load the correction file
- * @param file The path of correction file
+ * @brief load the lidar correction file
+ * @param contents The correction contents of lidar correction
  */
 int Pandar40P::LoadCorrectionFile(std::string file) {
-  internal_->LoadCorrectionFile(file);
+  return internal_->LoadCorrectionFile(file);
 }
 
 /**
- * @brief load the correction file
+ * @brief Reset Lidar's start angle.
  * @param angle The start angle
  */
 void Pandar40P::ResetStartAngle(uint16_t start_angle) {
   internal_->ResetStartAngle(start_angle);
 }
 
-int Pandar40P::Start() { internal_->Start(); }
+/**
+ * @brief Run SDK.
+ */
+int Pandar40P::Start() { return internal_->Start(); }
 
+/**
+ * @brief Stop SDK.
+ */
 void Pandar40P::Stop() { internal_->Stop(); }
 
 }  // namespace hesai

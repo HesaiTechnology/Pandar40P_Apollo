@@ -14,13 +14,20 @@
  * limitations under the License.
  *****************************************************************************/
 
-#include "src/pandar40p_internal.h"
+#include <sstream>
+
 #include "src/input.h"
-#include "src/lidar_correction.h"
+#include "src/pandar40p_internal.h"
 
 namespace apollo {
 namespace drivers {
 namespace hesai {
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+double degreeToRadian(double degree) { return degree * M_PI / 180; }
 
 // elevation angle of each line for HS Line 40 Lidar, Line 1 - Line 40
 static const float pandar40p_elev_angle_map[] = {
@@ -138,7 +145,49 @@ Pandar40P_Internal::~Pandar40P_Internal() {
  * @brief load the correction file
  * @param file The path of correction file
  */
-int Pandar40P_Internal::LoadCorrectionFile(std::string correction_content) {}
+int Pandar40P_Internal::LoadCorrectionFile(std::string correction_content) {
+  std::istringstream ifs(correction_content);
+
+  std::string line;
+  if (std::getline(ifs, line)) {  // first line "Laser id,Elevation,Azimuth"
+    std::cout << "Parse Lidar Correction..." << std::endl;
+  }
+
+  double azimuthOffset[LASER_COUNT];
+  double elev_angle[LASER_COUNT];
+
+  int lineCounter = 0;
+  while (std::getline(ifs, line)) {
+    if (lineCounter++ >= LASER_COUNT) break;
+
+    int lineId = 0;
+    double elev, azimuth;
+
+    std::stringstream ss(line);
+    std::string subline;
+    std::getline(ss, subline, ',');
+    std::stringstream(subline) >> lineId;
+    std::getline(ss, subline, ',');
+    std::stringstream(subline) >> elev;
+    std::getline(ss, subline, ',');
+    std::stringstream(subline) >> azimuth;
+
+    if (lineId != lineCounter) {
+      return -1;
+    }
+
+    elev_angle[lineId - 1] = elev;
+    azimuthOffset[lineId - 1] = azimuth;
+  }
+
+  for (int i = 0; i < LASER_COUNT; ++i) {
+    /* for all the laser offset */
+    elev_angle_map_[i] = elev_angle[i];
+    horizatal_azimuth_offset_map_[i] = azimuthOffset[i];
+  }
+
+  return 0;
+}
 
 /**
  * @brief load the correction file
@@ -407,7 +456,7 @@ void Pandar40P_Internal::CalcPointXYZIT(Pandar40PPacket *pkt, int blockid,
     if (unit.distance <= 0.5 || unit.distance > 200.0) {
       continue;
     }
-    
+
     double xyDistance =
         unit.distance * cosf(degreeToRadian(elev_angle_map_[i]));
     point.x = static_cast<float>(
