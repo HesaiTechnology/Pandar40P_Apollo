@@ -43,7 +43,8 @@ class Pandar40P {
    *        gps_port          The port number of gps data
    *        pcl_callback      The callback of PCL data structure
    *        gps_callback      The callback of GPS structure
-   *        start_angle       The start angle of every point cloud
+   *        start_angle       The start angle of every point cloud , 
+   *                          should be <real angle> * 100.
    */
   Pandar40P(std::string device_ip, uint16_t lidar_port, uint16_t gps_port,
             boost::function<void(boost::shared_ptr<PPointCloud>, double)>
