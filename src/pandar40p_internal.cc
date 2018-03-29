@@ -281,7 +281,15 @@ void Pandar40P_Internal::ProcessLiarPacket() {
       }
 
       for (int i = 0; i < BLOCKS_PER_PACKET; ++i) {
-        if (last_azimuth_ != pkt.blocks[i].azimuth) {
+        int azimuthGap = 0; /* To do */
+        if(last_azimuth_ > pkt.blocks[i].azimuth) {
+          azimuthGap = static_cast<int>(pkt.blocks[i].azimuth) + (36000 - static_cast<int>(last_azimuth_));
+        } else {
+          azimuthGap = static_cast<int>(pkt.blocks[i].azimuth) - static_cast<int>(last_azimuth_);
+        }
+        
+        if (last_azimuth_ != pkt.blocks[i].azimuth && 
+                      azimuthGap < 600 /* 6 degree*/) {
           /* for all the blocks */
           if ((last_azimuth_ > pkt.blocks[i].azimuth &&
                start_angle_ <= pkt.blocks[i].azimuth) ||
