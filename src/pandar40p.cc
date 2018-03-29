@@ -33,9 +33,11 @@ namespace hesai {
 Pandar40P::Pandar40P(
     std::string device_ip, uint16_t lidar_port, uint16_t gps_port,
     boost::function<void(boost::shared_ptr<PPointCloud>, double)> pcl_callback,
-    boost::function<void(double)> gps_callback, uint16_t start_angle,int tz , std::string frame_id) {
-  internal_ = new Pandar40P_Internal(device_ip, lidar_port, gps_port,
-                                     pcl_callback, gps_callback, start_angle , tz , frame_id);
+    boost::function<void(double)> gps_callback, uint16_t start_angle, int tz,
+    std::string frame_id) {
+  internal_ =
+      new Pandar40P_Internal(device_ip, lidar_port, gps_port, pcl_callback,
+                             gps_callback, start_angle, tz, frame_id);
 }
 
 /**

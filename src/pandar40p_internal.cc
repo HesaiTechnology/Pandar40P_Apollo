@@ -48,7 +48,8 @@ static const float pandar40p_horizatal_azimuth_offset_map[] = {
 Pandar40P_Internal::Pandar40P_Internal(
     std::string device_ip, uint16_t lidar_port, uint16_t gps_port,
     boost::function<void(boost::shared_ptr<PPointCloud>, double)> pcl_callback,
-    boost::function<void(double)> gps_callback, uint16_t start_angle,int tz , std::string frame_id) {
+    boost::function<void(double)> gps_callback, uint16_t start_angle, int tz,
+    std::string frame_id) {
   pthread_mutex_init(&lidar_lock_, NULL);
   sem_init(&lidar_sem_, 0, 0);
 
