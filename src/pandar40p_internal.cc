@@ -48,7 +48,7 @@ static const float pandar40p_horizatal_azimuth_offset_map[] = {
 Pandar40P_Internal::Pandar40P_Internal(
     std::string device_ip, uint16_t lidar_port, uint16_t gps_port,
     boost::function<void(boost::shared_ptr<PPointCloud>, double)> pcl_callback,
-    boost::function<void(double)> gps_callback, uint16_t start_angle) {
+    boost::function<void(double)> gps_callback, uint16_t start_angle,int tz , std::string frame_id) {
   pthread_mutex_init(&lidar_lock_, NULL);
   sem_init(&lidar_sem_, 0, 0);
 
@@ -133,6 +133,9 @@ Pandar40P_Internal::Pandar40P_Internal(
     horizatal_azimuth_offset_map_[i] =
         pandar40p_horizatal_azimuth_offset_map[i];
   }
+
+  frame_id_ = frame_id;
+  tz_second_ = tz * 3600;
 }
 
 Pandar40P_Internal::~Pandar40P_Internal() {
@@ -296,7 +299,7 @@ void Pandar40P_Internal::ProcessLiarPacket() {
       continue;
     }
 
-    outMsg->header.frame_id = "pandar";
+    outMsg->header.frame_id = frame_id_;
     outMsg->height = 1;
   }
 }
@@ -324,7 +327,7 @@ void Pandar40P_Internal::ProcessGps(const PandarGPS &gpsMsg) {
   t.tm_isdst = 0;
 
   if (gps_callback_) {
-    gps_callback_(static_cast<double>(mktime(&t)) + 1);
+    gps_callback_(static_cast<double>(mktime(&t) + tz_second_) + 1);
   }
 }
 
@@ -445,7 +448,7 @@ void Pandar40P_Internal::CalcPointXYZIT(Pandar40PPacket *pkt, int blockid,
   Pandar40PBlock *block = &pkt->blocks[blockid];
 
   double unix_second =
-      static_cast<double>(mktime(&pkt->t) + 1);  // 1 second offset
+      static_cast<double>(mktime(&pkt->t) + 1 + tz_second_);  // 1 second offset
 
   for (int i = 0; i < LASER_COUNT; ++i) {
     /* for all the units in a block */

@@ -114,7 +114,7 @@ class Pandar40P_Internal {
       std::string device_ip, uint16_t lidar_port, uint16_t gps_port,
       boost::function<void(boost::shared_ptr<PPointCloud>, double)>
           pcl_callback,
-      boost::function<void(double)> gps_callback, uint16_t start_angle);
+      boost::function<void(double)> gps_callback, uint16_t start_angle,int tz , std::string frame_id);
 
   /**
    * @brief load the correction file
@@ -168,6 +168,9 @@ class Pandar40P_Internal {
 
   float blockOffset_[BLOCKS_PER_PACKET];
   float laserOffset_[LASER_COUNT];
+
+  int tz_second_;
+  std::string frame_id_;
 };
 
 }  // namespace hesai
