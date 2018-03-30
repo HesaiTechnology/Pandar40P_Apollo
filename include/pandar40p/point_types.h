@@ -25,7 +25,7 @@ namespace hesai {
 
 struct PointXYZIT {
   PCL_ADD_POINT4D
-  float intensity;
+  uint8_t intensity;
   double timestamp;
   uint16_t ring;                   ///< laser ring number
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW  // make sure our new allocators are aligned
