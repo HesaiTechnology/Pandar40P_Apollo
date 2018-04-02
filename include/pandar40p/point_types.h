@@ -37,7 +37,7 @@ struct PointXYZIT {
 
 POINT_CLOUD_REGISTER_POINT_STRUCT(
     apollo::drivers::hesai::PointXYZIT,
-    (float, x, x)(float, y, y)(float, z, z)(float, intensity, intensity)(
+    (float, x, x)(float, y, y)(float, z, z)(uint8_t, intensity, intensity)(
         double, timestamp, timestamp)(uint16_t, ring, ring))
 
 typedef apollo::drivers::hesai::PointXYZIT PPoint;
