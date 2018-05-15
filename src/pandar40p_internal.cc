@@ -336,7 +336,7 @@ void Pandar40P_Internal::ProcessGps(const PandarGPS &gpsMsg) {
   t.tm_isdst = 0;
 
   if (gps_callback_) {
-    gps_callback_(static_cast<double>(mktime(&t) + tz_second_) + 1);
+    gps_callback_(static_cast<double>(mktime(&t) + tz_second_));
   }
 }
 
@@ -457,7 +457,7 @@ void Pandar40P_Internal::CalcPointXYZIT(Pandar40PPacket *pkt, int blockid,
   Pandar40PBlock *block = &pkt->blocks[blockid];
 
   double unix_second =
-      static_cast<double>(mktime(&pkt->t) + 1 + tz_second_);  // 1 second offset
+      static_cast<double>(mktime(&pkt->t) + tz_second_);
 
   for (int i = 0; i < LASER_COUNT; ++i) {
     /* for all the units in a block */
