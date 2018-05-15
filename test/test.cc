@@ -43,7 +43,7 @@ void lidarCallback(boost::shared_ptr<PPointCloud> cld, double timestamp) {
 
 int main(int argc, char** argv) {
   Pandar40P pandar40p(std::string("192.168.20.51"), 2368, 10110, lidarCallback,
-                      gpsCallback, 0);
+                      gpsCallback, 13500, 0, std::string("hesai40"));
   pandar40p.Start();
   while (true) {
     sleep(100);
