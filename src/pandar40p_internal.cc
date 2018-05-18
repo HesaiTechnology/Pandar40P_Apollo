@@ -498,7 +498,7 @@ void Pandar40P_Internal::CalcPointXYZIT(Pandar40PPacket *pkt, int blockid,
       // dual return, block 0&1 (2&3 , 4*5 ...)'s timestamp is the same.
       point.timestamp =
           point.timestamp - (static_cast<double>(blockOffset_[blockid / 2] +
-                                                 laserOffset_[i / 2]) /
+                                                 laserOffset_[i]) /
                              1000000.0f);
     } else {
       point.timestamp =
