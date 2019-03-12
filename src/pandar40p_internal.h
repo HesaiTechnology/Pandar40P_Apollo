@@ -115,7 +115,7 @@ class Pandar40P_Internal {
       boost::function<void(boost::shared_ptr<PPointCloud>, double)>
           pcl_callback,
       boost::function<void(double)> gps_callback, uint16_t start_angle, int tz,
-      std::string frame_id);
+      std::string frame_id,boost::function<void(uint8_t* buffer , uint16_t len , bool isEndPointInThisPacket)> packet_callback);
 
   /**
    * @brief load the correction file
@@ -158,6 +158,8 @@ class Pandar40P_Internal {
   boost::function<void(boost::shared_ptr<PPointCloud> cld, double timestamp)>
       pcl_callback_;
   boost::function<void(double timestamp)> gps_callback_;
+
+  boost::function<void(uint8_t* buffer , uint16_t len , bool isEndPointInThisPacket)> packet_callback_;
 
   float sin_lookup_table_[ROTATION_MAX_UNITS];
   float cos_lookup_table_[ROTATION_MAX_UNITS];

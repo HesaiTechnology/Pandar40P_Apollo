@@ -45,12 +45,15 @@ class Pandar40P {
    *        gps_callback      The callback of GPS structure
    *        start_angle       The start angle of every point cloud ,
    *                          should be <real angle> * 100.
+   *        tz                time zone  , +/ timezone 
+   *        frame_id          point cloud frame id
+   *        packet_callback   The callback of raw udp packet , if NULL , will not callback
    */
   Pandar40P(std::string device_ip, uint16_t lidar_port, uint16_t gps_port,
             boost::function<void(boost::shared_ptr<PPointCloud>, double)>
                 pcl_callback,
             boost::function<void(double)> gps_callback, uint16_t start_angle,
-            int tz, std::string frame_id);
+            int tz, std::string frame_id , boost::function<void(uint8_t* buffer , uint16_t len , bool isEndPointInThisPacket)> packet_callback);
 
   /**
    * @brief deconstructor

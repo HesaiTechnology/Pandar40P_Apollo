@@ -49,7 +49,7 @@ Pandar40P_Internal::Pandar40P_Internal(
     std::string device_ip, uint16_t lidar_port, uint16_t gps_port,
     boost::function<void(boost::shared_ptr<PPointCloud>, double)> pcl_callback,
     boost::function<void(double)> gps_callback, uint16_t start_angle, int tz,
-    std::string frame_id) {
+    std::string frame_id , boost::function<void(uint8_t* buffer , uint16_t len , bool isEndPointInThisPacket)> packet_callback) {
   pthread_mutex_init(&lidar_lock_, NULL);
   sem_init(&lidar_sem_, 0, 0);
 
@@ -71,6 +71,7 @@ Pandar40P_Internal::Pandar40P_Internal(
 
   pcl_callback_ = pcl_callback;
   gps_callback_ = gps_callback;
+  packet_callback_ = packet_callback;
 
   last_azimuth_ = 0;
 
@@ -280,6 +281,8 @@ void Pandar40P_Internal::ProcessLiarPacket() {
         continue;
       }
 
+      bool isend = false;
+
       for (int i = 0; i < BLOCKS_PER_PACKET; ++i) {
         int azimuthGap = 0; /* To do */
         if(last_azimuth_ > pkt.blocks[i].azimuth) {
@@ -298,12 +301,15 @@ void Pandar40P_Internal::ProcessLiarPacket() {
             if (pcl_callback_ && outMsg->points.size() > 0) {
               pcl_callback_(outMsg, outMsg->points[0].timestamp);
               outMsg.reset(new PPointCloud());
+              isend = true;
             }
           }
         }
         CalcPointXYZIT(&pkt, i, outMsg);
         last_azimuth_ = pkt.blocks[i].azimuth;
       }
+      if(packet_callback_)
+        packet_callback_(packet.data , packet.size , isend);
     } else {
       continue;
     }

@@ -41,9 +41,14 @@ void lidarCallback(boost::shared_ptr<PPointCloud> cld, double timestamp) {
               timestamp);
 }
 
+void packetCallback(uint8_t * buffer , uint16_t len , bool isEndPointInThisPacket) {
+  printf("is end : %d , len : %d  \n", isEndPointInThisPacket , len);
+
+}
+
 int main(int argc, char** argv) {
   Pandar40P pandar40p(std::string("192.168.20.51"), 2368, 10110, lidarCallback,
-                      gpsCallback, 13500, 0, std::string("hesai40"));
+                      gpsCallback, 13500, 0, std::string("hesai40") , NULL /*packetCallback*/);
   pandar40p.Start();
   while (true) {
     sleep(100);
